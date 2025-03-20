@@ -32,35 +32,40 @@ def generate_polars_dataframe(n: int) -> pl.DataFrame:
         "alder": gen_random_ints(n)
     })
 
-def main():
-    n = 1_500_000
-    #path: str = f"/buckets/produkt/forbruk/{n}_rows.parquet"
-    path = f"/home/onyxia/work/test/output/{n}_rows.parquet"
+def gen_large_parquet(n: int):
+    path = f"/home/onyxia/work/kladd/output/{n}_rows.parquet"
+    print(f"Generating parquet file with {n} rows")
     df = generate_polars_dataframe(n)
+    df.write_parquet(path)
+    print(f"File written to {path}")
+
+def main(n: int):
+    path_read = f"/home/onyxia/work/kladd/output/{n}_rows.parquet"
+    path_write = f"/home/onyxia/work/kladd/output/{n}_rows_pseudonymized.parquet"
+    df = pl.read_parquet(path_read)
+    print(f"Pseudonymizing DataFrame with shape f{df.shape}...")
     df = (
       Pseudonymize
         .from_polars(df)
         .on_fields("fornavn","etternavn")
         .with_default_encryption()
-        .run()
+        .run(timeout = 20 * 60)
         .to_polars()
     )
     print(df)
-    df.write_parquet(path)
-    print(f"File written to {path}")
-
-def read():
-    lf = pl.scan_parquet("/buckets/produkt/forbruk/1500000_rows.parquet")
-    print(lf.last().collect())
+    df.write_parquet(path_write)
+    print(f"File written to {path_write}")
 
 if __name__ == "__main__":
     args = sys.argv[1:]
     match args:
-        case ["read"]:
-            read()
-        case ["write"]:
-            main()
+        case ["gen", i]:
+            n = floor(float(i) * 1_000_000)
+            gen_large_parquet(n)
+        case ["write", i]:
+            n = floor(float(i) * 1_000_000)
+            main(n)
         case _:
-            print("Valid argument not provided!")
+            print("Invalid argument passed")
             sys.exit(1)
 
