@@ -12,3 +12,4 @@ wheels/
 # Profiling stuff
 mprofile*
 output/*
+input/*
