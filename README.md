@@ -2,6 +2,7 @@
 
 ## Profiling pseudonymization
 Profiling pseudonymization through dapla-toolbelt-pseudo.
+Tests are run using the command `time uv run mprof run main.py write <ARGS>`.
 
 TODO: Run the tests several times and normalize the results.
 
