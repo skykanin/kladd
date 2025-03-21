@@ -30,8 +30,7 @@ def generate_polars_dataframe(n: int, pseudo_type: Literal["sid", "default"]) ->
     fnrs = cycle(["11854898347", "01839899544", "16910599481"])
     test_fnrs: list[str] | None = [next(fnrs) for _ in range(n)] if pseudo_type == "sid" else None 
     return pl.DataFrame({
-        "fornavn": test_fnrs if pseudo_type == "sid" else gen_random_strings(n),
-        "etternavn": test_fnrs if pseudo_type == "sid" else gen_random_strings(n),
+        "fnr": test_fnrs if pseudo_type == "sid" else gen_random_strings(n),
         "alder": gen_random_ints(n)
     })
 
@@ -52,7 +51,7 @@ def main(n: int, pseudo_type: Literal["sid", "default"]):
         df = (
             Pseudonymize
             .from_polars(df)
-            .on_fields("fornavn","etternavn")
+            .on_fields("fnr")
             .with_stable_id()
             .run(timeout = 20 * 60)
             .to_polars()
@@ -61,7 +60,7 @@ def main(n: int, pseudo_type: Literal["sid", "default"]):
         df = (
             Pseudonymize
             .from_polars(df)
-            .on_fields("fornavn","etternavn")
+            .on_fields("fnr")
             .with_default_encryption()
             .run(timeout = 20 * 60)
             .to_polars()
